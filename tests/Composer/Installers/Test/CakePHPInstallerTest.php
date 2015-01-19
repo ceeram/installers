@@ -90,28 +90,15 @@ class CakePHPInstallerTest extends TestCase
         $this->setCakephpVersion($rm, '>=2.5');
         $result = $installer->getLocations();
         $this->assertContains('Plugin/', $result['plugin']);
-
-        // cakephp >= 3.0
-        $this->setCakephpVersion($rm, '3.0.*-dev');
-        $result = $installer->getLocations();
-        $this->assertContains('plugins/', $result['plugin']);
-
-        $this->setCakephpVersion($rm, '~8.8');
-        $result = $installer->getLocations();
-        $this->assertContains('plugins/', $result['plugin']);
     }
 
     /**
-     * Test if installer-name was set
+     * Test exception thrown when trying to install cakephp-plugin with CakePHP 3.x
      *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Package type "cakephp-plugin" for CakePHP 3.x must be installed with cakephp/plugin-installer.
      */
     public function testGetInstallPath() {
-        $autoload = array(
-            'psr-4' => array(
-                'FOC\\Authenticate' => ''
-            )
-        );
-        $this->package->setAutoload($autoload);
         $this->package->setType('cakephp-plugin');
         $rm = new RepositoryManager(
             $this->getMock('Composer\IO\IOInterface'),
@@ -122,33 +109,6 @@ class CakePHPInstallerTest extends TestCase
 
         $this->setCakephpVersion($rm, '3.0.0');
         $installer->getInstallPath($this->package, 'cakephp');
-        $extra = $this->package->getExtra();
-        $this->assertEquals('FOC/Authenticate', $extra['installer-name']);
-
-        $autoload = array(
-            'psr-4' => array(
-                'FOC\Acl\Test' => './tests',
-                'FOC\Acl' => ''
-            )
-        );
-        $this->package->setAutoload($autoload);
-        $this->package->setExtra(array());
-        $installer->getInstallPath($this->package, 'cakephp');
-        $extra = $this->package->getExtra();
-        $this->assertEquals('FOC/Acl', $extra['installer-name']);
-
-        $autoload = array(
-            'psr-4' => array(
-                'Foo\Bar' => 'foo',
-                'Acme\Plugin\Test' => 'tests',
-                'Acme\Plugin' => './src'
-            )
-        );
-        $this->package->setAutoload($autoload);
-        $this->package->setExtra(array());
-        $installer->getInstallPath($this->package, 'cakephp');
-        $extra = $this->package->getExtra();
-        $this->assertEquals('Acme/Plugin', $extra['installer-name']);
     }
 
     protected function setCakephpVersion($rm, $version) {
